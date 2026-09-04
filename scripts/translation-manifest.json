@@ -1,0 +1,28 @@
+{
+  "source_patterns": [
+    "README.md",
+    "src/**/*.md"
+  ],
+  "source_overrides": {
+    "README.md": {
+      "zh-CN": "README-CN.md",
+      "fa-IR": "README-FA.md"
+    },
+    "src/behavioral/behavior.md": {
+      "zh-CN": "cn/src/behavior.md",
+      "fa-IR": "fa/src/behavioral/behavior.md"
+    }
+  },
+  "languages": {
+    "zh-CN": {
+      "label": "Simplified Chinese",
+      "local_root": "cn",
+      "style_guide": "cn/TRANSLATION-GUIDE.md"
+    },
+    "fa-IR": {
+      "label": "Persian (Farsi)",
+      "local_root": "fa",
+      "style_guide": "fa/TRANSLATION-GUIDE.md"
+    }
+  }
+}

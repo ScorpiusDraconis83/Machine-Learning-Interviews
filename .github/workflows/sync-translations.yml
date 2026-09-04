@@ -1,0 +1,120 @@
+name: Sync Chinese and Persian translations
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - README.md
+      - "src/**/*.md"
+  workflow_dispatch:
+    inputs:
+      all_documents:
+        description: Synchronize every English Markdown document
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: translation-sync
+  cancel-in-progress: false
+
+jobs:
+  synchronize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      TRANSLATION_MODEL: ${{ vars.TRANSLATION_MODEL || 'gpt-5.6-terra' }}
+      AUTOMATION_BRANCH: automation/translation-sync
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Check out the canonical commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update affected translations
+        id: translate
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${OPENAI_API_KEY}" ]]; then
+            echo "OPENAI_API_KEY is not configured as a repository Actions secret." >&2
+            exit 1
+          fi
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.all_documents }}" == "true" ]]; then
+            python3 scripts/sync_translations.py --all
+          else
+            python3 scripts/sync_translations.py \
+              --base "${{ github.event.before }}" \
+              --head "${{ github.sha }}"
+          fi
+
+          if [[ -z "$(git status --porcelain -- README-CN.md README-FA.md cn fa)" ]]; then
+            echo "changed=false" >> "${GITHUB_OUTPUT}"
+          else
+            echo "changed=true" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Validate localized documents
+        if: steps.translate.outputs.changed == 'true'
+        run: |
+          python3 -m unittest discover -s tests -p "test_*.py"
+          python3 scripts/sync_translations.py --check
+          git diff --check -- README-CN.md README-FA.md cn fa
+
+      - name: Commit and push the review branch
+        if: steps.translate.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "${AUTOMATION_BRANCH}"
+          git add README-CN.md README-FA.md cn fa
+          git diff --cached --check
+          git commit -m "Sync translations from ${GITHUB_SHA:0:12}"
+
+          remote_sha="$(git ls-remote origin "refs/heads/${AUTOMATION_BRANCH}" | cut -f1)"
+          if [[ -n "${remote_sha}" ]]; then
+            git push \
+              --force-with-lease="refs/heads/${AUTOMATION_BRANCH}:${remote_sha}" \
+              origin "HEAD:refs/heads/${AUTOMATION_BRANCH}"
+          else
+            git push origin "HEAD:refs/heads/${AUTOMATION_BRANCH}"
+          fi
+
+      - name: Open or refresh the translation pull request
+        if: steps.translate.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          pr_number="$(gh pr list \
+            --base main \
+            --head "${AUTOMATION_BRANCH}" \
+            --state open \
+            --json number \
+            --jq '.[0].number // empty')"
+
+          body="Automated Simplified Chinese and Persian updates for canonical English commit ${GITHUB_SHA}. Review technical terminology and prose quality before merging."
+          if [[ -z "${pr_number}" ]]; then
+            gh pr create \
+              --base main \
+              --head "${AUTOMATION_BRANCH}" \
+              --title "Sync Chinese and Persian translations" \
+              --body "${body}"
+          else
+            gh pr edit "${pr_number}" --body "${body}"
+            echo "Updated translation pull request #${pr_number}."
+          fi
+
+      - name: Report no localization changes
+        if: steps.translate.outputs.changed != 'true'
+        run: echo "Translations already match the canonical English change."
