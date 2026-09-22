@@ -1,4 +1,16 @@
-## AIMLInterviews 1:1 Coaching & Mock Interviews
+<p align="center">
+<img width="720" src="src/imgs/cover.png">
+</p>
+
+English | [简体中文](README-CN.md) | [فارسی](README-FA.md)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Code style: black](https://img.shields.io/badge/code%20style-black-000.svg)](https://github.com/psf/black) [![GitHub stars](https://img.shields.io/github/stars/alirezadir/AIMLInterviews?style=social)](https://github.com/alirezadir/AIMLInterviews/stargazers) [![GitHub forks](https://img.shields.io/github/forks/alirezadir/AIMLInterviews?style=social)](https://github.com/alirezadir/AIMLInterviews/network) [![Last Commit](https://img.shields.io/github/last-commit/alirezadir/AIMLInterviews)](https://github.com/alirezadir/AIMLInterviews/commits/main) [![GitHub issues](https://img.shields.io/github/issues/alirezadir/AIMLInterviews)](https://github.com/alirezadir/AIMLInterviews/issues) [![Contributors](https://img.shields.io/github/contributors/alirezadir/AIMLInterviews)](https://github.com/alirezadir/AIMLInterviews/graphs/contributors) [![Tweet](https://img.shields.io/twitter/url?label=Share%20on%20X&url=https%3A%2F%2Fgithub.com%2Falirezadir%2FAIMLInterviews&style=social)](https://twitter.com/intent/tweet?text=Check%20out%20AIMLInterviews%20by%20%40alirezadira%20%E2%80%94%20A%20guide%20to%20prepare%20for%20AI%2FML%20interviews!&url=https%3A%2F%2Fgithub.com%2Falirezadir%2FAIMLInterviews&hashtags=MachineLearning,MLinterviews,AI)
+
+## News
+
+:newspaper: This repository is now **AIMLInterviews**, updated for 2026 with expanded LLM, multimodal AI, post-training, and GenAI system-design content.
+
+### AIMLInterviews 1:1 Coaching & Mock Interviews
 
 I now offer **1:1 AI/ML interview coaching & mock interviews** for AI/ML Engineers, Applied AI Scientists, Research Engineers, Research Scientists, AI Strategists, Engineering Managers, and senior AI leaders.
 
@@ -8,13 +20,6 @@ Learn more: [https://aimlinterviews.io](https://aimlinterviews.io)
 
 ---
 
-<p align="center">
-<img width="720" src="src/imgs/cover.png">
-</p>
-
-English | [简体中文](README-CN.md) | [فارسی](README-FA.md)
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Code style: black](https://img.shields.io/badge/code%20style-black-000.svg)](https://github.com/psf/black) [![GitHub stars](https://img.shields.io/github/stars/alirezadir/AIMLInterviews?style=social)](https://github.com/alirezadir/AIMLInterviews/stargazers) [![GitHub forks](https://img.shields.io/github/forks/alirezadir/AIMLInterviews?style=social)](https://github.com/alirezadir/AIMLInterviews/network) [![Last Commit](https://img.shields.io/github/last-commit/alirezadir/AIMLInterviews)](https://github.com/alirezadir/AIMLInterviews/commits/main) [![GitHub issues](https://img.shields.io/github/issues/alirezadir/AIMLInterviews)](https://github.com/alirezadir/AIMLInterviews/issues) [![Contributors](https://img.shields.io/github/contributors/alirezadir/AIMLInterviews)](https://github.com/alirezadir/AIMLInterviews/graphs/contributors) [![Tweet](https://img.shields.io/twitter/url?label=Share%20on%20X&url=https%3A%2F%2Fgithub.com%2Falirezadir%2FAIMLInterviews&style=social)](https://twitter.com/intent/tweet?text=Check%20out%20AIMLInterviews%20by%20%40alirezadira%20%E2%80%94%20A%20guide%20to%20prepare%20for%20AI%2FML%20interviews!&url=https%3A%2F%2Fgithub.com%2Falirezadir%2FAIMLInterviews&hashtags=MachineLearning,MLinterviews,AI)
 # AI / Machine Learning Interviews :robot: 
 
 This repo aims to serve as a guide to prepare for **AI and ML Technical interviews** for relevant roles at big tech companies (in particular FAANG). It has compiled based on the author's personal experience and notes from his own interview preparation, when he received 5 simultaneous offers from Meta (ML Specialist), Google (ML Engineer), Amazon (Applied Scientist), Apple (Applied Scientist), and Roku (ML Engineer) in 2020, and repeated offers from Amazon and Apple in 2025 (AI Tech Lead).
@@ -49,10 +54,6 @@ codex mcp add aimlinterviews -- npx -y aimlinterviews-mcp
 ```
 
 Clone this repository first, then run the command from the clone or set `AIMLINTERVIEWS_ROOT`. See the [MCP server guide](MCP/README.md) for configuration, tools, and development instructions.
-
-## News
-
-:newspaper: This repository is now **AIMLInterviews**, updated for 2026 with expanded LLM, multimodal AI, post-training, and GenAI system-design content.
 
 **Notes:**
 * AI and ML interviews at different companies do not follow a unique structure. However, I found the components very similar across FAANG companies. Startup interviews are often tailored to their own use cases and problems at hand, while larger companies tend to follow a more consistent structure.
