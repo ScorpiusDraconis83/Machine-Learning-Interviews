@@ -7,5 +7,9 @@ src/*/.*
 
 /AGENTS.md
 
+# Local translation workflow documentation
+/docs/translation-automation.md
+/docs/FARSI-AI-TRANSLATION-GUIDE.md
+
 __pycache__/
 *.py[cod]
