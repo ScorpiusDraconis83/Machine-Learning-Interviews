@@ -161,21 +161,30 @@ export class TutorService {
   getCompanyPrep(company: string, role: string, weeks: number): ToolTextResult {
     const duration = clamp(weeks, 1, 12);
     const areas = roleAreas(role);
-    const plan = areas.map((area) => ({
-      area,
-      problems: this.catalog.problems.filter((problem) => problem.area === area).slice(0, 8).map(problemSummary),
-      topics: this.catalog.sections.filter((section) => section.area === area).slice(0, 6).map(sectionSummary),
-    }));
+    const plan = areas.map((area) => {
+      const areaProblems = this.catalog.problems.filter((problem) => problem.area === area);
+      const companyTagged = areaProblems.filter((problem) => matchesCompany(problem.companies, company));
+      const fallback = areaProblems.filter((problem) => !matchesCompany(problem.companies, company));
+      const selected = [...companyTagged, ...fallback].slice(0, 8);
+      return {
+        area,
+        companyTaggedCount: Math.min(companyTagged.length, selected.length),
+        problems: selected.map(problemSummary),
+        topics: this.catalog.sections.filter((section) => section.area === area).slice(0, 6).map(sectionSummary),
+      };
+    });
+    const taggedTotal = plan.reduce((total, entry) => total + entry.companyTaggedCount, 0);
     return result(
       [
         `${company} preparation plan for ${role}, ${duration} week(s).`,
         "This is a curriculum-based plan inferred from the role, not a claim about current company questions.",
         "",
-        ...plan.map((entry) => `${entry.area}: ${entry.problems.length} practice problems and ${entry.topics.length} chapter topics`),
+        ...plan.map((entry) => `${entry.area}: ${entry.problems.length} practice problems (${entry.companyTaggedCount} explicitly tagged for ${company}) and ${entry.topics.length} chapter topics`),
         "",
+        taggedTotal ? "Company-tagged source problems are listed first; role-relevant curriculum fills remaining slots." : `No source problems are explicitly tagged for ${company}; this plan uses role-relevant curriculum instead.`,
         "Finish with timed mixed mocks and verify current interview-loop details directly with the recruiter.",
       ].join("\n"),
-      { company, role, weeks: duration, areas, plan, basis: "AIMLInterviews curriculum and role keywords" },
+      { company, role, weeks: duration, areas, plan, companyTaggedCount: taggedTotal, basis: "Exact source company tags first, followed by role-relevant AIMLInterviews curriculum fallback" },
     );
   }
 
@@ -248,6 +257,11 @@ function tokenize(value: string): string[] {
 function includes(values: string[], query: string): boolean {
   const normalized = query.toLowerCase();
   return values.some((value) => value.toLowerCase().includes(normalized));
+}
+
+function matchesCompany(values: string[], query: string): boolean {
+  const normalized = query.trim().toLowerCase();
+  return values.some((value) => value.toLowerCase() === normalized);
 }
 
 function roleAreas(role: string): Area[] {

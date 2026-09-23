@@ -14,9 +14,10 @@ export function createFixtureRepository(): string {
     "src/MLC/ml-coding.md": [
       "# ML coding",
       "## Priority ML coding problems",
-      "| Problem | Why it matters |",
-      "| --- | --- |",
-      "| Stable softmax | Numerical stability |",
+      "| Problem | Difficulty | Tags | Company tags | Answer | Interview focus |",
+      "| --- | --- | --- | --- | --- | --- |",
+      "| Stable softmax | Easy | numerical stability, vectorization | Meta | answer | Stable exponentials |",
+      "| Pairwise ranking loss | Medium | ranking, losses | Google | answer | Pairwise comparisons |",
       "## Interview method",
       "Explain shapes, tests, and complexity.",
     ].join("\n"),

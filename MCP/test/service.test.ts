@@ -22,6 +22,14 @@ test("tutor service supports discovery, hints, planning, and spoiler-safe review
     assert.match(textOf(tutor.searchCurriculum({ query: "evaluation" })), /src\/ml-fundamental\.md/);
     assert.match(textOf(tutor.getLearningPath("ml-engineer", "mid", 4)), /4 week/);
     assert.match(textOf(tutor.getCompanyPrep("ExampleCo", "GenAI Engineer", 3)), /not a claim/i);
+    const metaPlan = tutor.getCompanyPrep("Meta", "ML Engineer", 3);
+    const googlePlan = tutor.getCompanyPrep("Google", "ML Engineer", 3);
+    assert.equal((metaPlan.structuredContent as Record<string, unknown>).companyTaggedCount, 1);
+    assert.equal((googlePlan.structuredContent as Record<string, unknown>).companyTaggedCount, 1);
+    const metaMlCoding = planArea(metaPlan, "ml-coding");
+    const googleMlCoding = planArea(googlePlan, "ml-coding");
+    assert.equal((metaMlCoding.problems[0] as { title: string }).title, "Stable softmax");
+    assert.equal((googleMlCoding.problems[0] as { title: string }).title, "Pairwise ranking loss");
     assert.match(textOf(tutor.reviewAnswer(problem.id, "I would choose this because it handles constraints and I would test edge cases.")), /does not provide a reference answer/i);
     assert.equal(tutor.getProblem("missing").isError, true);
   } finally {
@@ -45,4 +53,18 @@ test("server registers MCP v2 tool schemas", async () => {
 function textOf(result: { content: Array<Record<string, unknown>> }): string {
   const block = result.content.find((item) => item.type === "text");
   return typeof block?.text === "string" ? block.text : "";
+}
+
+function planArea(
+  result: { structuredContent?: unknown },
+  area: string,
+): { problems: Array<Record<string, unknown>> } {
+  const content = result.structuredContent as Record<string, unknown>;
+  const plan = content.plan as Array<{
+    area: string;
+    problems: Array<Record<string, unknown>>;
+  }>;
+  const entry = plan.find((item) => item.area === area);
+  assert.ok(entry);
+  return entry;
 }

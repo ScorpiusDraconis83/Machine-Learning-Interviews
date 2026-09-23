@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { McpServer } from "@modelcontextprotocol/server";
 import * as z from "zod/v4";
 
@@ -6,7 +7,9 @@ import { resolveRepositoryRoot } from "./repository.js";
 import { TutorService } from "./service.js";
 import { AREAS } from "./types.js";
 
-export const SERVER_VERSION = "0.1.1";
+export const SERVER_VERSION = (JSON.parse(
+  readFileSync(new URL("../../package.json", import.meta.url), "utf8"),
+) as { version: string }).version;
 
 export interface CreateServerOptions {
   repositoryRoot?: string;
@@ -224,7 +227,7 @@ function registerPrompts(server: McpServer): void {
           "leadership",
         ]),
         experience: z.enum(["early", "mid", "senior"]).default("mid"),
-        weeks: z.number().int().min(1).max(16).default(4),
+        weeks: z.string().regex(/^(?:[1-9]|1[0-6])$/).default("4"),
       }),
     },
     ({ goal, experience, weeks }) => ({

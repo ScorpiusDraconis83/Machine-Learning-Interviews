@@ -141,7 +141,7 @@ export function extractProblems(
       /Priority ML coding problems/i.test(heading.title),
     );
     if (priorityHeading) {
-      const cells = line.split("|").map((cell) => stripMarkdown(cell.trim())).filter(Boolean);
+      const cells = parseMarkdownTableRow(line);
       if (
         cells.length >= 2 &&
         !/^Problem$/i.test(cells[0]) &&
@@ -152,11 +152,14 @@ export function extractProblems(
           title: cells[0],
           prompt: [
             `Implement ${cells[0]}.`,
-            `Discuss ${cells.at(-1) ?? "correctness and edge cases"}.`,
+            `Discuss ${cells[5] ?? "correctness and edge cases"}.`,
             `Difficulty: ${cells[1] ?? "unspecified"}.`,
             `Tags: ${cells[2] ?? "unspecified"}.`,
             `Companies: ${cells[3] ?? "none listed"}.`,
           ].join(" "),
+          difficulty: parseDifficulty(cells[1]),
+          tags: parseList(cells[2]),
+          companies: parseCompanies(cells[3]),
           sourcePath,
           sourceLine: index + 1,
           sourceHeading: priorityHeading.title,
@@ -226,6 +229,9 @@ function addProblem(
     sourceHeading: string;
     headingContext: string[];
     sourceCommit: string;
+    difficulty?: Difficulty;
+    tags?: string[];
+    companies?: string[];
   },
 ): void {
   const title = input.title.trim();
@@ -237,9 +243,9 @@ function addProblem(
     title,
     prompt: input.prompt || title,
     area,
-    difficulty: inferDifficulty(area, input.headingContext, combined),
-    tags: inferTags(combined),
-    companies: COMPANY_NAMES.filter((company) =>
+    difficulty: input.difficulty ?? inferDifficulty(area, input.headingContext, combined),
+    tags: unique([...(input.tags ?? []), ...inferTags(`${input.headingContext.join(" ")} ${combined}`)]),
+    companies: input.companies ?? COMPANY_NAMES.filter((company) =>
       new RegExp(`\\b${company}\\b`, "i").test(combined),
     ),
     sourcePath: input.sourcePath,
@@ -308,7 +314,7 @@ function inferTags(text: string): string[] {
   const normalized = text.toLowerCase();
   const dictionary: Record<string, RegExp> = {
     algorithms: /algorithm|complexity|array|tree|graph/,
-    agents: /agent|tool use|memory/,
+    agents: /\bagent(?:ic|s)?\b|tool use/,
     attention: /attention|transformer|kv cache|gqa|mqa/,
     behavioral: /behavior|leadership|project|stakeholder/,
     coding: /implement|code|function|debug/,
@@ -322,6 +328,44 @@ function inferTags(text: string): string[] {
   return Object.entries(dictionary)
     .filter(([, pattern]) => pattern.test(normalized))
     .map(([tag]) => tag);
+}
+
+function parseMarkdownTableRow(line: string): string[] {
+  if (!line.includes("|")) return [];
+  const cells = line.split("|");
+  if (!cells[0]?.trim()) cells.shift();
+  if (!cells.at(-1)?.trim()) cells.pop();
+  return cells.map((cell) => stripMarkdown(cell.trim()));
+}
+
+function parseDifficulty(value: string | undefined): Difficulty | undefined {
+  const match = /\b(easy|medium|hard)\b/i.exec(value ?? "");
+  return match?.[1].toLowerCase() as Difficulty | undefined;
+}
+
+function parseList(value: string | undefined): string[] | undefined {
+  if (value === undefined) return undefined;
+  return unique(
+    value
+      .split(/[,;\u00b7]/)
+      .map((item) => item.trim().toLowerCase())
+      .filter((item) => item && !/^(?:-|none|n\/a|unspecified)$/i.test(item)),
+  );
+}
+
+function parseCompanies(value: string | undefined): string[] | undefined {
+  const items = parseList(value);
+  if (items === undefined) return undefined;
+  return unique(
+    items.map((item) => {
+      const known = COMPANY_NAMES.find((company) => company.toLowerCase() === item);
+      return known ?? item.replace(/\b\w/g, (character) => character.toUpperCase());
+    }),
+  ).sort((left, right) => left.localeCompare(right));
+}
+
+function unique(values: string[]): string[] {
+  return [...new Set(values)];
 }
 
 function sanitizePrompt(value: string): string {
